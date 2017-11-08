@@ -95,6 +95,12 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   cout << "z:" << z.rows() << " " <<  z.cols() << endl;
   cout << "hx:" << hx.rows() << " " <<  hx.cols() << endl;
   VectorXd y = z - hx;
+  // Normalizing Angles, see Tips and Tricks from project document
+  if(y(1) > M_PI){
+	  y(1) = 2*M_PI - y(1);
+  }else if(y(1) < -M_PI){
+	  y(1) = -(y(1) + 2*M_PI);
+  }
   cout << "y:" << y.rows() << " " <<  y.cols() << endl;
 
   H_ = tools.CalculateJacobian(x_);
