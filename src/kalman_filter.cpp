@@ -55,12 +55,8 @@ void KalmanFilter::Update(const VectorXd &z) {
   P_ = (I -  K * H_) * P_;
 }
 
-void KalmanFilter::UpdateEKF(const VectorXd &z) {
-  /**
-  TODO:
-    * update the state by using Extended Kalman Filter equations
-  */
-  //TODO: normalize the angle?
+// A helper function to map predicted locations x' from Cartesian to polar coordinates.
+VectorXd BuildHx(const VectorXd &x_) {
   float px = x_(0);
   float py = x_(1);
   float vx = x_(2);
@@ -72,8 +68,8 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
 	  rho_dot = 0;
   } else if (px==0){
 	  rho = py;
-      phi = M_PI/2;
-      rho_dot = vy;
+	  phi = M_PI/2;
+	  rho_dot = vy;
   } else {
 	  rho = sqrt(px*px + py*py);
 	  phi = atan2(py, px);
@@ -82,9 +78,17 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
 
   VectorXd hx(3);
   hx << rho, phi, rho_dot;
+  return hx;
+}
+
+void KalmanFilter::UpdateEKF(const VectorXd &z) {
+  /**
+  TODO:
+    * update the state by using Extended Kalman Filter equations
+  */
 
   Tools tools;
-  VectorXd y = z - hx;
+  VectorXd y = z - BuildHx(x_);
   // Normalizing Angles, see Tips and Tricks from project document
   if(y(1) > M_PI){
 	  y(1) = 2*M_PI - y(1);
