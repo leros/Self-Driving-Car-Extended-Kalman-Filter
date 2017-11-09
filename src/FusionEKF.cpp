@@ -61,7 +61,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       * Remember: you'll need to convert radar from polar to cartesian coordinates.
     */
     // first measurement
-    cout << "EKF: " << endl;
     ekf_.x_ = VectorXd(4);
     ekf_.x_ << 1, 1, 1, 1;
 
@@ -83,7 +82,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       /**
       Convert radar from polar to cartesian coordinates and initialize state.
       */
-  	  cout << "initialize with RADAR" << endl;
   	  float rho_measured = measurement_pack.raw_measurements_[0];
   	  float phi_measured = measurement_pack.raw_measurements_[1];
   	  float px = rho_measured * cos(phi_measured);
@@ -96,14 +94,12 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       /**
       Initialize state.
       */
-    	  cout << "initialize with LASER" << endl;
     	  ekf_.x_ << measurement_pack.raw_measurements_[0], measurement_pack.raw_measurements_[1], 0, 0;
       previous_timestamp_ = measurement_pack.timestamp_;
     }
 
     // done initializing, no need to predict or update
     is_initialized_ = true;
-    cout << "EKF: Initialization done!" << endl;  //TODO: CHECK! remove debug print statement
     return;
   }
 
@@ -120,7 +116,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
    */
   //compute the time elapsed between the current and previous measurements
 
-  cout << "EKF: prepare for prediction" << endl; //TODO: remove debug print statement
   	float dt = (measurement_pack.timestamp_ - previous_timestamp_) / 1000000.0;	//dt - expressed in seconds
   	previous_timestamp_ = measurement_pack.timestamp_;
 
@@ -138,9 +133,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 			   dt_3/2*noise_ax, 0, dt_2*noise_ax, 0,
 			   0, dt_3/2*noise_ay, 0, dt_2*noise_ay;
 
-  cout << "EKF: Predict start" << endl; //TODO: remove debug print statement
   ekf_.Predict();
-  cout << "EKF: Predict done!" << endl; //TODO: remove debug print statement
 
   /*****************************************************************************
    *  Update
@@ -154,20 +147,15 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
   if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
     // Radar updates
-	cout << "Do extend KF" << endl; //TODO: remove debug print statement
 	ekf_.R_ = R_radar_;
 	ekf_.H_ = Hj_;
     ekf_.UpdateEKF(measurement_pack.raw_measurements_);
-	cout << "Done extend KF" << endl; //TODO: remove debug print statement
   } else {
     // Laser updates
-	cout << "Do KF" << endl; //TODO: remove debug print statement
     ekf_.R_ = R_laser_;
     ekf_.H_ = H_laser_;
     ekf_.Update(measurement_pack.raw_measurements_);
-	cout << "Done KF" << endl; //TODO: remove debug print statement
   }
-  cout << "EKF: Update done!" << endl; //TODO:  remove debug print statement
 
   // print the output
   cout << "x_ = " << ekf_.x_ << endl;

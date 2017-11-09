@@ -32,7 +32,7 @@ void KalmanFilter::Predict() {
   TODO:
     * predict the state
   */
-  x_ = F_ * x_; //TODO: add u or not?
+  x_ = F_ * x_;
   MatrixXd Ft = F_.transpose();
   P_ = F_ * P_ * Ft + Q_;
 }
@@ -44,23 +44,15 @@ void KalmanFilter::Update(const VectorXd &z) {
   */
 
   VectorXd y = z - H_ * x_;
-  cout << "z:" << z.rows() << " " <<  z.cols() << endl;
-  cout << "H_:" << H_.rows() << " " <<  H_.cols() << endl;
-  cout << "x_:" << x_.rows() << " " <<  x_.cols() << endl;
-  cout << "y:" << y.rows() << " " <<  y.cols() << endl;
 
-  MatrixXd Ht = H_.transpose(); //4,2
-  MatrixXd S = H_ * P_ * Ht + R_; // 2,4  4,4 4,2
-  cout << "S:" << S.rows() << " " <<  S.cols() << endl;
+  MatrixXd Ht = H_.transpose();
+  MatrixXd S = H_ * P_ * Ht + R_;
   MatrixXd Si = S.inverse();
   MatrixXd K = P_ * Ht * Si;
-  cout << "K:" << K.rows() << " " <<  K.cols() << endl;
 
   x_ = x_ + (K * y);
-  cout << "x_2:" << x_.rows() << " " <<  x_.cols() << endl;
   MatrixXd I = MatrixXd::Identity(4, 4);
   P_ = (I -  K * H_) * P_;
-  cout << "P_:" << P_.rows() << " " <<  P_.cols() << endl;
 }
 
 void KalmanFilter::UpdateEKF(const VectorXd &z) {
@@ -92,8 +84,6 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   hx << rho, phi, rho_dot;
 
   Tools tools;
-  cout << "z:" << z.rows() << " " <<  z.cols() << endl;
-  cout << "hx:" << hx.rows() << " " <<  hx.cols() << endl;
   VectorXd y = z - hx;
   // Normalizing Angles, see Tips and Tricks from project document
   if(y(1) > M_PI){
@@ -101,20 +91,15 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   }else if(y(1) < -M_PI){
 	  y(1) = -(y(1) + 2*M_PI);
   }
-  cout << "y:" << y.rows() << " " <<  y.cols() << endl;
 
   H_ = tools.CalculateJacobian(x_);
   MatrixXd Ht = H_.transpose();
   MatrixXd S = H_ * P_ * Ht + R_;
-  cout << "S:" << S.rows() << " " <<  S.cols() << endl;
   MatrixXd Si = S.inverse();
   MatrixXd K = P_ * Ht * Si;
-  cout << "K:" << K.rows() << " " <<  K.cols() << endl;
 
   x_ = x_ + (K * y);
-  cout << "x_2:" << x_.rows() << " " <<  x_.cols() << endl;
   MatrixXd I = MatrixXd::Identity(4, 4);
   P_ = (I -  K * H_) * P_;
-  cout << "P_:" << P_.rows() << " " <<  P_.cols() << endl;
 
 }
